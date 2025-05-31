@@ -6,185 +6,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gerenciador de Loja DApp (Web3.js)</title>
     <link rel="icon" href="./favicon.png" type="image/png">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h2 {
-            color: #0056b3;
-        }
-
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        input[type="text"],
-        input[type="number"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 15px;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .section {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .section:last-child {
-            border-bottom: none;
-        }
-
-        #productDetails,
-        #paymentStatus,
-        #errorMessages,
-        .eventNotification {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
-        }
-
-        #productDetails {
-            background-color: #e9ecef;
-        }
-
-        #paymentStatus {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        #errorMessages {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .product-list-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            /* Cria um layout responsivo em colunas */
-            gap: 20px;
-            /* Espaçamento entre as caixas dos produtos */
-            margin-top: 20px;
-        }
-
-        .product-box {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .product-box h3 {
-            margin-top: 0;
-            color: #0056b3;
-        }
-
-        .product-box p {
-            margin-bottom: 8px;
-            line-height: 1.6;
-        }
-
-        .product-box button {
-            width: 100%;
-            margin-top: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
-    <div class="container">
-        <h1>Gerenciador de Loja DApp (Web3.js) 🛒</h1>
+    <div class="header_container" style="height: 100px; width: 100%; display: flex;">
+        <img style="display: flex; margin: auto; align-items: center; align-content: center;" src="./blockchain_blackBG.png" height="100px" width="100px">
+    </div>
 
-        <button id="connectWalletBtn">Conectar Carteira MetaMask</button>
-        <p id="walletAddress">Status da Carteira: Não Conectada</p>
-        <p id="networkName">Rede: N/A</p>
-
-        <hr />
-
-        <div class="section">
-            <h2>Criar Produto 📦</h2>
-            <label for="productName">Nome do Produto:</label>
-            <input type="text" id="productName" placeholder="Ex: Camiseta" />
-
-            <label for="productQuantity">Quantidade:</label>
-            <input type="number" id="productQuantity" placeholder="Ex: 10" />
-
-            <label for="productPrice">Preço Unitário (em Wei):</label>
-            <input type="number" id="productPrice" placeholder="Ex: 10000000000000000 (0.01 ETH)" />
-
-            <button id="createProductBtn">Criar Produto</button>
-        </div>
-
-        <hr />
-
-        <div class="section">
-            <h2>Consultar Produto 🔍</h2>
-            <label for="productIdQuery">ID do Produto:</label>
-            <input type="number" id="productIdQuery" placeholder="Ex: 1" />
-            <button id="getProductBtn">Ver Detalhes do Produto</button>
-            <button id="calculatePriceBtn">Calcular Preço Total</button>
-            <div id="productDetails" class="hidden"></div>
-        </div>
-
-        <hr />
-
-        <div class="section">
-            <h2>Produtos Disponíveis 🛍️</h2>
-            <div id="paymentStatus" class="hidden"></div>
-            <div id="productList" class="product-list-container">
-            </div>
-        </div>
-
-        <hr />
-        <div class="section">
-            <h2>Todos os Produtos Cadastrados 📚</h2>
-            <div id="allProductList" class="product-list-container">
-            </div>
-        </div>
-
+    <div id="notifications_wrapper">
         <div id="errorMessages" class="hidden"></div>
         <div id="eventNotificationsContainer"></div>
+        <div id="paymentStatus" class="hidden"></div>
+    </div>
+
+    <div class="wallet_info">
+        <button id="connectWalletBtn"><b>Conectar Carteira</b></button>
+        <p id="networkName">Rede: N/A</p>
+        <!-- <p id="walletAddress">Status da Carteira: Não Conectada</p> -->
+    </div>
+
+    <div class="create_product_container">
+        <h2>Criar Produto</h2>
+
+        <div class="primary_inputs">
+            <label for="productName">Nome do Produto:</label>
+            <input type="text" id="productName" placeholder="Ex: Camiseta" />
+        </div>
+
+        <div class="secondary_inputs">
+            <div class="input_1">
+                <label for="productQuantity">Quantidade:</label>
+                <input type="number" id="productQuantity" placeholder="Ex: 10" />
+            </div>
+            
+            <div class="input_2">
+                <label for="productPrice">Preço Unitário (em Wei):</label>
+                <input type="number" id="productPrice" placeholder="Ex: 10000000000000000 (0.01 ETH)" />
+            </div>
+        </div>
+
+        <button id="createProductBtn">Criar Produto</button>
+    </div>
+
+    <div class="consult_product_container">
+        <h2>Consultar Produto</h2>
+        <div class="id_input">
+            <label for="productIdQuery">ID do Produto:</label>
+            <input type="number" id="productIdQuery" placeholder="Ex: 1" />
+        </div>
+        <div class="buttons_container">
+            <button id="getProductBtn">Ver Detalhes</button>
+            <button id="calculatePriceBtn">Calcular Preço Total</button>
+        </div>
+        <div id="productDetails" class="hidden"></div>
+    </div>
+
+    <div class="available_products_container hidden">
+        <h2>Produtos Disponíveis</h2>
+        <div class="fix_product_box">
+            <div id="productList" class="product-list-container scrollable-list-container">
+            </div>
+        </div>
+    </div>
+
+    <div class="all_products_container hidden">
+        <h2>Todos os Produtos</h2>
+        <div class="fix_product_box">
+            <div id="allProductList" class="product-list-container scrollable-list-container">
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>

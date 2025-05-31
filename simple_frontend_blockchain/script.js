@@ -293,10 +293,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let web3;
     let userAccount;
     let storeManagerContract;
+    let listenersAttached = false; // flag para garantir que os ouvintes sejam adicionados apenas uma vez
 
     // --- Elementos do DOM ---
     const connectWalletBtn = document.getElementById("connectWalletBtn");
-    const walletAddressDiv = document.getElementById("walletAddress");
+    // const walletAddressDiv = document.getElementById("walletAddress");
     const networkNameDiv = document.getElementById("networkName");
 
     const createProductBtn = document.getElementById("createProductBtn");
@@ -318,7 +319,10 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     const productListDiv = document.getElementById("productList"); // Para produtos disponíveis (não pagos)
-    const allProductListDiv = document.getElementById("allProductList"); 
+    const allProductListDiv = document.getElementById("allProductList");
+    const availableProductsContainer = document.querySelector('.available_products_container');
+    const allProductsContainer = document.querySelector('.all_products_container');
+    const consultProductContainer = document.querySelector('.consult_product_container');
 
     // --- Funções Auxiliares ---
     function showError(message) {
@@ -384,9 +388,29 @@ document.addEventListener("DOMContentLoaded", () => {
         // }
     }
 
+    function updateConsultContainerPadding() {
+        if (availableProductsContainer && allProductsContainer && consultProductContainer) {
+            if (!availableProductsContainer.classList.contains('hidden') || !allProductsContainer.classList.contains('hidden')) {
+                // se pelo menos um container de lista estiver visivel
+                consultProductContainer.style.paddingBottom = '0';
+            } else {
+                // se nenhum container de lista estiver visivel
+                consultProductContainer.style.paddingBottom = '30px'; // padding original
+            }
+        } else {
+             console.warn("updateConsultContainerPadding: containers nao encontrados.");
+        }
+    }
+
     // --- Lógica de Conexão e Contrato ---
     async function connectWallet() {
         if (typeof window.ethereum !== "undefined") {
+            // verifica se a carteira já está conectada e ouvintes anexados
+            if (userAccount && listenersAttached) {
+                console.log("carteira já conectada e ouvintes anexados. ignorando.");
+                return;
+            }
+
             web3 = new Web3(window.ethereum);
             try {
                 const accounts = await window.ethereum.request({
@@ -405,10 +429,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     networkName = "Local (Ganache/Develop)"; // Common Ganache/local IDs
                 networkNameDiv.textContent = `Rede: ${networkName} (ID: ${networkId})`;
 
-                walletAddressDiv.textContent = `Carteira Conectada: ${userAccount.substring(
-                    0,
-                    6
-                )}...${userAccount.substring(userAccount.length - 4)}`;
+                // walletAddressDiv.textContent = `Carteira Conectada: ${userAccount.substring(
+                //     0,
+                //     6
+                // )}...${userAccount.substring(userAccount.length - 4)}`;
+
                 connectWalletBtn.textContent = "Carteira Conectada";
                 connectWalletBtn.disabled = true;
 
@@ -417,19 +442,35 @@ document.addEventListener("DOMContentLoaded", () => {
                     contractAddress
                 );
                 setButtonsDisabled(false);
+                // chama listenToEvents apenas após conectar e inicializar o contrato
                 listenToEvents();
+
+                // mostrar containers de produtos
+                availableProductsContainer.classList.remove('hidden');
+                allProductsContainer.classList.remove('hidden');
+                updateConsultContainerPadding();
 
                 await loadAndDisplayProducts();
                 await loadAndDisplayAllProducts();
             } catch (error) {
                 showError("Falha ao conectar carteira: " + (error.message || error));
-                walletAddressDiv.textContent = "Falha ao conectar. Por favor, tente novamente.";
+                // walletAddressDiv.textContent = "Falha ao conectar. Por favor, tente novamente.";
                 setButtonsDisabled(true);
+
+                // ocultar containers de produtos
+                availableProductsContainer.classList.add('hidden');
+                allProductsContainer.classList.add('hidden');
+                updateConsultContainerPadding();
             }
         } else {
             showError("MetaMask não detectado! Por favor, instale a MetaMask.");
-            walletAddressDiv.textContent = "MetaMask não encontrado.";
+            // walletAddressDiv.textContent = "MetaMask não encontrado.";
             setButtonsDisabled(true);
+
+            // ocultar containers de produtos
+            availableProductsContainer.classList.add('hidden');
+            allProductsContainer.classList.add('hidden');
+            updateConsultContainerPadding();
         }
     }
 
@@ -448,15 +489,17 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        showProductDetails(
-            `Criando produto... Por favor, aguarde a confirmação da transação.`
+        showEventNotification(
+            `Criando produto... Por favor, aguarde a confirmação da transação.`,
+            "info"
         );
         try {
             const receipt = await storeManagerContract.methods
                 .createProduct(name, quantity, unitPrice)
                 .send({ from: userAccount });
-            showProductDetails(
-                `Produto ${name} criado com sucesso! Hash: ${receipt.transactionHash}`
+            showEventNotification(
+                `Produto ${name} criado com sucesso! Hash: ${receipt.transactionHash}`,
+                "success"
             );
             productNameInput.value = "";
             productQuantityInput.value = "";
@@ -612,7 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 readableError = `Erro ao pagar: Produto com ID ${productId} não encontrado.`;
             } else if ( error.data && error.data.message && error.data.message.toLowerCase().includes("product already paid for")) {
                 readableError = `Erro ao pagar: Produto com ID ${productId} já foi pago.`;
-            } else if (error.data &&error.data.message &&error.data.message.toLowerCase().includes("incorrect payment amount")) {
+            } else if ( error.data &&error.data.message &&error.data.message.toLowerCase().includes("incorrect payment amount")) {
                 readableError = `Erro ao pagar: Valor do pagamento incorreto para o produto ID ${productId}.`;
             }
             showError(`Erro ao pagar produto: ${readableError}`);
@@ -623,84 +666,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadAndDisplayAllProducts() {
         console.log("--- loadAndDisplayAllProducts: FUNÇÃO INICIADA ---");
-    
+
         if (!storeManagerContract) {
             console.warn("loadAndDisplayAllProducts: Contrato não inicializado ou carteira não conectada.");
             if (allProductListDiv) {
                  allProductListDiv.innerHTML = '<p>Conecte a carteira para carregar todos os produtos.</p>';
             } else {
                 // Este log só apareceria se allProductListDiv não estivesse no HTML
-                console.error("loadAndDisplayAllProducts: ERRO CRÍTICO - allProductListDiv é null!"); 
+                console.error("loadAndDisplayAllProducts: ERRO CRÍTICO - allProductListDiv é null!");
             }
             return;
         }
-    
+
         if (!allProductListDiv) {
             console.error("loadAndDisplayAllProducts: ERRO CRÍTICO - allProductListDiv não foi encontrado no DOM! Verifique o ID 'allProductList' no HTML.");
             return;
         }
-        
+
         allProductListDiv.innerHTML = '<p>Carregando todos os produtos...</p>';
         console.log("loadAndDisplayAllProducts: Exibindo 'Carregando todos os produtos...'");
-    
+
         try {
             const productIds = await storeManagerContract.methods.getAllProductIds().call();
             console.log("loadAndDisplayAllProducts: IDs dos Produtos Recebidos:", JSON.stringify(productIds));
-    
+
             if (!productIds || productIds.length === 0) {
                 allProductListDiv.innerHTML = '<p>Nenhum produto cadastrado na loja.</p>';
-                console.log("loadAndDisplayAllProducts: Nenhum ID de produto encontrado.");
+                // availableProductsContainer.classList.add('hidden'); // mantere availableProductsContainer visivel mesmo se allProductsContainer estiver vazio
+                console.log("loadAndDisplayAllProducts: Nenhum ID de produto encontrado. Exibindo mensagem e saindo.");
+                updateConsultContainerPadding();
                 return;
             }
-    
+
             allProductListDiv.innerHTML = ''; // Limpa a lista
             console.log("loadAndDisplayAllProducts: allProductListDiv limpo.");
-    
+
             let productsEffectivelyFound = 0; // Contador para produtos válidos (com nome)
-    
+
             for (const id of productIds) {
                 console.log(`loadAndDisplayAllProducts: Iterando - Processando ID: ${id}`);
                 try {
                     const product = await storeManagerContract.methods.getProduct(id).call();
                     // product[0] = name, product[1] = quantity, product[2] = unitPrice
                     // product[3] = seller, product[4] = isPaid
-    
+
                     // Log para depuração do produto individual
                     console.log(`--- Detalhes (Todos) para Produto ID: ${id}, Pago: ${product ? product[4] : 'N/A'} ---`);
-    
+
                     // Condição: Apenas exibir se o produto for válido (nome não vazio)
                     if (product && product[0] !== "") {
                         productsEffectivelyFound++;
                         const productBox = document.createElement('div');
                         productBox.className = 'product-box'; // Reutilizar a mesma classe CSS
                         const productPriceEth = web3.utils.fromWei(product[2].toString(), 'ether');
-    
+
                         productBox.innerHTML = `
                             <h3>${product[0]} (ID: ${id})</h3>
                             <p><strong>Quantidade:</strong> ${product[1]}</p>
                             <p><strong>Preço Unitário:</strong> ${productPriceEth} ETH (${product[2].toString()} Wei)</p>
                             <p><strong>Vendedor:</strong> ${product[3].substring(0,6)}...${product[3].substring(product[3].length - 4)}</p>
-                            <p><strong>Status:</strong> ${product[4] ? 'Pago ✅' : 'Disponível 🛒'}</p> 
+                            <p><strong>Status:</strong> ${product[4] ? 'Pago ✅' : 'Disponível 🛒'}</p>
                         `; // Status dinâmico
-    
-                        // Adicionar botão de pagar SOMENTE se não estiver pago
-                        if (!product[4]) { // Se isPaid for false
-                            const payButton = document.createElement('button');
-                            payButton.textContent = `Pagar ${productPriceEth} ETH`;
-                            payButton.onclick = async () => {
-                               const totalPriceToPay = await storeManagerContract.methods.calculateTotalPrice(id).call();
-                               await paySpecificProduct(id, totalPriceToPay.toString());
-                            };
-                            productBox.appendChild(payButton);
-                        }
-                        
+
                         allProductListDiv.appendChild(productBox);
                     } else if (product) { // Produto existe mas nome é vazio
                          console.log(`loadAndDisplayAllProducts: Produto ID: ${id} - Inválido (nome vazio). NÃO EXIBINDO.`);
                     } else { // Produto não pôde ser carregado
                         console.warn(`loadAndDisplayAllProducts: Produto ID: ${id} - Não foi possível carregar os detalhes.`);
                     }
-    
+
                 } catch (error) {
                     console.error(`loadAndDisplayAllProducts: Erro ao buscar detalhes do produto com ID ${id}:`, error);
                     const errorBox = document.createElement('div');
@@ -709,18 +743,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     allProductListDiv.appendChild(errorBox);
                 }
             }
-            
-            if (productsEffectivelyFound === 0 && productIds.length > 0) { 
+
+            if (productsEffectivelyFound === 0 && productIds.length > 0) {
                  allProductListDiv.innerHTML = '<p>Nenhum produto válido encontrado (verifique o console para detalhes de erros por ID).</p>';
             }
             // A verificação de productIds.length === 0 já cobre o caso de nenhum produto cadastrado.
-    
+
             console.log("--- loadAndDisplayAllProducts: FUNÇÃO CONCLUÍDA ---");
-    
+            updateConsultContainerPadding();
+
         } catch (error) {
             showError("Erro ao carregar a lista de todos os produtos: " + (error.message || error));
             if (allProductListDiv) allProductListDiv.innerHTML = '<p>Erro ao carregar todos os produtos. Tente novamente.</p>';
             console.error("loadAndDisplayAllProducts: Erro principal na função:", error);
+            updateConsultContainerPadding();
         }
     }
 
@@ -734,39 +770,41 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             return;
         }
-    
+
         // Verifica se productListDiv existe, pois é crucial para o restante da função
         if (!productListDiv) {
             console.error("loadAndDisplayProducts: ERRO CRÍTICO - productListDiv não foi encontrado no DOM! Verifique o ID 'productList' no HTML.");
             return; // Não podemos continuar sem este elemento
         }
-        
+
         productListDiv.innerHTML = '<p>Carregando produtos disponíveis...</p>';
-    
+
         try {
             const productIds = await storeManagerContract.methods.getAllProductIds().call();
-    
+
             if (!productIds || productIds.length === 0) {
-                productListDiv.innerHTML = '<p>Nenhum produto cadastrado na loja.</p>';
+                productListDiv.innerHTML = '<p>Nenhum produto disponível.</p>';
+                availableProductsContainer.classList.add('hidden');
                 console.log("loadAndDisplayProducts: Nenhum ID de produto encontrado. Exibindo mensagem e saindo.");
+                updateConsultContainerPadding();
                 return;
             }
-    
+
             productListDiv.innerHTML = ''; // Limpa a lista
-    
+
             let unpaidProductsFound = false;
-    
+
             for (const id of productIds) {
                 try {
                     const product = await storeManagerContract.methods.getProduct(id).call();
-    
+
                     if (product && product[0] !== "" && !product[4]) { // Filtro: produto válido e NÃO pago
                         unpaidProductsFound = true;
-    
+
                         const productBox = document.createElement('div');
                         productBox.className = 'product-box';
                         const productPriceEth = web3.utils.fromWei(product[2].toString(), 'ether');
-    
+
                         productBox.innerHTML = `
                             <h3>${product[0]} (ID: ${id})</h3>
                             <p><strong>Quantidade:</strong> ${product[1]}</p>
@@ -774,7 +812,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <p><strong>Vendedor:</strong> ${product[3].substring(0,6)}...${product[3].substring(product[3].length - 4)}</p>
                             <p><strong>Status:</strong> Disponível 🛒</p>
                         `;
-    
+
                         const payButton = document.createElement('button');
                         payButton.textContent = `Pagar ${productPriceEth} ETH`;
                         payButton.onclick = async () => {
@@ -792,17 +830,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     productListDiv.appendChild(errorBox);
                 }
             }
-    
-            if (!unpaidProductsFound && productIds.length > 0) {
-                productListDiv.innerHTML = '<p>Todos os produtos disponíveis já foram pagos! 🎉</p>';
-            } else if (!unpaidProductsFound && productIds.length === 0) { // Este caso é coberto antes, mas por redundância
-                 productListDiv.innerHTML = '<p>Nenhum produto disponível para venda no momento.</p>';
+
+            if (!unpaidProductsFound) {
+                availableProductsContainer.classList.add('hidden');
+                 productListDiv.innerHTML = '<p>Nenhum produto disponível para compra no momento.</p>';
+            } else {
+                availableProductsContainer.classList.remove('hidden');
             }
-    
+            updateConsultContainerPadding();
+
         } catch (error) {
             showError("Erro ao carregar a lista de produtos: " + (error.message || error));
             if (productListDiv) productListDiv.innerHTML = '<p>Erro ao carregar produtos. Tente novamente.</p>';
             console.error("loadAndDisplayProducts: Erro principal na função:", error);
+            updateConsultContainerPadding();
         }
     }
 
@@ -840,8 +881,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 )} ETH. Hash: ${receipt.transactionHash}`
             );
 
-            // Atualiza a lista de produtos para refletir o status de pagamento
+            // removemos as chamadas diretas aqui. as listas serão atualizadas pelo evento PaymentSuccessful.
             // loadAndDisplayProducts();
+            // loadAndDisplayAllProducts();
 
         } catch (error) {
             let readableError = error.message;
@@ -861,20 +903,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Ouvir Eventos do Contrato ---
     function listenToEvents() {
-        if (!storeManagerContract) return;
+        if (!storeManagerContract || listenersAttached) return; // verifica se já adicionou
 
         storeManagerContract.events
             .ProductCreated({ fromBlock: "latest" })
             .on("data", (event) => {
                 console.log("Evento ProductCreated:", event.returnValues);
                 const { id, name, unitPrice } = event.returnValues;
-                showEventNotification(
-                    `🎉 Novo Produto Criado! ID: ${id}, Nome: ${name}, Preço: ${web3.utils.fromWei(
-                        unitPrice,
-                        "ether"
-                    )} ETH`,
-                    "info"
-                );
+                // ao criar um produto, apenas atualiza as listas
                 loadAndDisplayProducts();
                 loadAndDisplayAllProducts();
             })
@@ -889,18 +925,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("Evento PaymentSuccessful:", event.returnValues);
                 const { productId, buyer, amount } = event.returnValues;
                 showEventNotification(
-                    `💸 Pagamento Recebido! Produto ID: ${productId}, Comprador: ${buyer.substring(
+                    `Pagamento Recebido! Produto ID: ${productId}, Comprador: ${buyer.substring(
                         0,
                         6
                     )}..., Valor: ${web3.utils.fromWei(amount, "ether")} ETH`,
                     "success"
                 );
+                // ao pagar um produto, atualiza as listas
                 loadAndDisplayProducts();
+                loadAndDisplayAllProducts(); // adicionar essa linha para atualizar a lista de "todos os produtos" também
             })
             .on("error", (error) => {
                 console.error("Erro ao ouvir PaymentSuccessful:", error);
                 showError("Erro ao ouvir evento PaymentSuccessful do contrato.");
             });
+
+        listenersAttached = true; // marca como adicionado
     }
 
     // --- Adicionar Event Listeners aos Botões ---
