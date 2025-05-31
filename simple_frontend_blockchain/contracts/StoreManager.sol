@@ -22,11 +22,15 @@ contract StoreManager {
     // Mappings for storage
     mapping(uint256 => Product) public products;
     mapping(uint256 => Payment) public payments;
+
+    uint256[] public allProductsIds;
     uint256 public productCount;
+    uint256 private _nextProductId;
 
     // Constructor
     constructor() {
         productCount = 0;
+        _nextProductId = 1;
     }
 
     // Events
@@ -47,7 +51,6 @@ contract StoreManager {
 
     // Create a new product
     function createProduct(
-        uint256 _id,
         string memory _name,
         uint256 _quantity,
         uint256 _unitPrice
@@ -55,8 +58,10 @@ contract StoreManager {
         require(_quantity > 0, "Quantity must be positive");
         require(_unitPrice > 0, "Price must be positive");
 
-        products[_id] = Product({
-            id: _id,
+        uint256 newId = _nextProductId;
+
+        products[newId] = Product({
+            id: newId,
             name: _name,
             quantity: _quantity,
             unitPrice: _unitPrice,
@@ -65,13 +70,17 @@ contract StoreManager {
         });
 
         productCount++;
-        emit ProductCreated(_id, _name, _quantity, _unitPrice, msg.sender);
+        emit ProductCreated(newId, _name, _quantity, _unitPrice, msg.sender);
+
+        _nextProductId++;
+        allProductsIds.push(newId);
     }
 
     // Pay for a product
     function payForProduct(uint256 _productId) external payable {
         Product storage product = products[_productId];
-        require(product.id == _productId, "Product does not exist");
+        require(product.seller != address(0), "Product does not exist");
+
         require(!product.isPaid, "Product already paid for");
         require(
             msg.value == (product.quantity * product.unitPrice),
@@ -107,7 +116,8 @@ contract StoreManager {
         returns (uint256)
     {
         Product memory product = products[_productId];
-        require(product.id == _productId, "Product does not exist");
+        require(product.seller != address(0), "Product does not exist");
+
         return product.quantity * product.unitPrice;
     }
 
@@ -124,7 +134,8 @@ contract StoreManager {
         )
     {
         Product memory product = products[_productId];
-        require(product.id == _productId, "Product does not exist");
+        require(product.seller != address(0), "Product does not exist");
+
         return (
             product.name,
             product.quantity,
@@ -132,5 +143,9 @@ contract StoreManager {
             product.seller,
             product.isPaid
         );
+    }
+
+    function getAllProductIds() external view returns (uint256[] memory) {
+        return allProductsIds;
     }
 }

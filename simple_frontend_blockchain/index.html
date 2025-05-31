@@ -1,27 +1,137 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gerenciador de Loja DApp (Web3.js)</title>
+    <link rel="icon" href="./favicon.png" type="image/png">
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
-        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { color: #0056b3; }
-        label { display: block; margin-top: 10px; font-weight: bold; }
-        input[type="text"], input[type="number"] { width: calc(100% - 22px); padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; font-size: 16px; }
-        button:hover { background-color: #0056b3; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-        .section { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
-        .section:last-child { border-bottom: none; }
-        #productDetails, #paymentStatus, #errorMessages, .eventNotification { margin-top: 15px; padding: 10px; border-radius: 4px; }
-        #productDetails { background-color: #e9ecef; }
-        #paymentStatus { background-color: #d4edda; color: #155724; }
-        #errorMessages { background-color: #f8d7da; color: #721c24; }
-        .hidden { display: none; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #0056b3;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        #productDetails,
+        #paymentStatus,
+        #errorMessages,
+        .eventNotification {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        #productDetails {
+            background-color: #e9ecef;
+        }
+
+        #paymentStatus {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        #errorMessages {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .product-list-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            /* Cria um layout responsivo em colunas */
+            gap: 20px;
+            /* Espaçamento entre as caixas dos produtos */
+            margin-top: 20px;
+        }
+
+        .product-box {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .product-box h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+
+        .product-box p {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .product-box button {
+            width: 100%;
+            margin-top: 10px;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Gerenciador de Loja DApp (Web3.js) 🛒</h1>
@@ -30,44 +140,47 @@
         <p id="walletAddress">Status da Carteira: Não Conectada</p>
         <p id="networkName">Rede: N/A</p>
 
-        <hr>
+        <hr />
 
         <div class="section">
             <h2>Criar Produto 📦</h2>
-            <label for="productIdCreate">ID do Produto:</label>
-            <input type="number" id="productIdCreate" placeholder="Ex: 1">
-
             <label for="productName">Nome do Produto:</label>
-            <input type="text" id="productName" placeholder="Ex: Camiseta">
+            <input type="text" id="productName" placeholder="Ex: Camiseta" />
 
             <label for="productQuantity">Quantidade:</label>
-            <input type="number" id="productQuantity" placeholder="Ex: 10">
+            <input type="number" id="productQuantity" placeholder="Ex: 10" />
 
             <label for="productPrice">Preço Unitário (em Wei):</label>
-            <input type="number" id="productPrice" placeholder="Ex: 10000000000000000 (0.01 ETH)">
+            <input type="number" id="productPrice" placeholder="Ex: 10000000000000000 (0.01 ETH)" />
 
             <button id="createProductBtn">Criar Produto</button>
         </div>
 
-        <hr>
+        <hr />
 
         <div class="section">
             <h2>Consultar Produto 🔍</h2>
             <label for="productIdQuery">ID do Produto:</label>
-            <input type="number" id="productIdQuery" placeholder="Ex: 1">
+            <input type="number" id="productIdQuery" placeholder="Ex: 1" />
             <button id="getProductBtn">Ver Detalhes do Produto</button>
             <button id="calculatePriceBtn">Calcular Preço Total</button>
             <div id="productDetails" class="hidden"></div>
         </div>
 
-        <hr>
+        <hr />
 
         <div class="section">
-            <h2>Pagar Produto 💳</h2>
-            <label for="productIdPay">ID do Produto para Pagar:</label>
-            <input type="number" id="productIdPay" placeholder="Ex: 1">
-            <button id="payProductBtn">Pagar Produto</button>
+            <h2>Produtos Disponíveis 🛍️</h2>
             <div id="paymentStatus" class="hidden"></div>
+            <div id="productList" class="product-list-container">
+            </div>
+        </div>
+
+        <hr />
+        <div class="section">
+            <h2>Todos os Produtos Cadastrados 📚</h2>
+            <div id="allProductList" class="product-list-container">
+            </div>
         </div>
 
         <div id="errorMessages" class="hidden"></div>
@@ -75,574 +188,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Configuração do Contrato ---
-            // !!! SUBSTITUA PELO ENDEREÇO DO SEU CONTRATO IMPLANTADO !!!
-            const contractAddress = '0xFF1a310ecb889e2fE0a691791Eebf7508c01dE91'; // Use o endereço que você me forneceu por último
-            const contractABI = [
-                            {
-                            "inputs": [],
-                            "stateMutability": "nonpayable",
-                            "type": "constructor"
-                            },
-                            {
-                            "anonymous": false,
-                            "inputs": [
-                                {
-                                "indexed": true,
-                                "internalType": "uint256",
-                                "name": "productId",
-                                "type": "uint256"
-                                },
-                                {
-                                "indexed": false,
-                                "internalType": "address",
-                                "name": "buyer",
-                                "type": "address"
-                                },
-                                {
-                                "indexed": false,
-                                "internalType": "address",
-                                "name": "seller",
-                                "type": "address"
-                                },
-                                {
-                                "indexed": false,
-                                "internalType": "uint256",
-                                "name": "amount",
-                                "type": "uint256"
-                                }
-                            ],
-                            "name": "PaymentSuccessful",
-                            "type": "event"
-                            },
-                            {
-                            "anonymous": false,
-                            "inputs": [
-                                {
-                                "indexed": true,
-                                "internalType": "uint256",
-                                "name": "id",
-                                "type": "uint256"
-                                },
-                                {
-                                "indexed": false,
-                                "internalType": "string",
-                                "name": "name",
-                                "type": "string"
-                                },
-                                {
-                                "indexed": false,
-                                "internalType": "uint256",
-                                "name": "quantity",
-                                "type": "uint256"
-                                },
-                                {
-                                "indexed": false,
-                                "internalType": "uint256",
-                                "name": "unitPrice",
-                                "type": "uint256"
-                                },
-                                {
-                                "indexed": false,
-                                "internalType": "address",
-                                "name": "seller",
-                                "type": "address"
-                                }
-                            ],
-                            "name": "ProductCreated",
-                            "type": "event"
-                            },
-                            {
-                            "inputs": [
-                                {
-                                "internalType": "uint256",
-                                "name": "",
-                                "type": "uint256"
-                                }
-                            ],
-                            "name": "payments",
-                            "outputs": [
-                                {
-                                "internalType": "address",
-                                "name": "buyer",
-                                "type": "address"
-                                },
-                                {
-                                "internalType": "uint256",
-                                "name": "amount",
-                                "type": "uint256"
-                                },
-                                {
-                                "internalType": "uint256",
-                                "name": "timestamp",
-                                "type": "uint256"
-                                }
-                            ],
-                            "stateMutability": "view",
-                            "type": "function",
-                            "constant": true
-                            },
-                            {
-                            "inputs": [],
-                            "name": "productCount",
-                            "outputs": [
-                                {
-                                "internalType": "uint256",
-                                "name": "",
-                                "type": "uint256"
-                                }
-                            ],
-                            "stateMutability": "view",
-                            "type": "function",
-                            "constant": true
-                            },
-                            {
-                            "inputs": [
-                                {
-                                "internalType": "uint256",
-                                "name": "",
-                                "type": "uint256"
-                                }
-                            ],
-                            "name": "products",
-                            "outputs": [
-                                {
-                                "internalType": "uint256",
-                                "name": "id",
-                                "type": "uint256"
-                                },
-                                {
-                                "internalType": "string",
-                                "name": "name",
-                                "type": "string"
-                                },
-                                {
-                                "internalType": "uint256",
-                                "name": "quantity",
-                                "type": "uint256"
-                                },
-                                {
-                                "internalType": "uint256",
-                                "name": "unitPrice",
-                                "type": "uint256"
-                                },
-                                {
-                                "internalType": "address",
-                                "name": "seller",
-                                "type": "address"
-                                },
-                                {
-                                "internalType": "bool",
-                                "name": "isPaid",
-                                "type": "bool"
-                                }
-                            ],
-                            "stateMutability": "view",
-                            "type": "function",
-                            "constant": true
-                            },
-                            {
-                            "inputs": [
-                                {
-                                "internalType": "uint256",
-                                "name": "_id",
-                                "type": "uint256"
-                                },
-                                {
-                                "internalType": "string",
-                                "name": "_name",
-                                "type": "string"
-                                },
-                                {
-                                "internalType": "uint256",
-                                "name": "_quantity",
-                                "type": "uint256"
-                                },
-                                {
-                                "internalType": "uint256",
-                                "name": "_unitPrice",
-                                "type": "uint256"
-                                }
-                            ],
-                            "name": "createProduct",
-                            "outputs": [],
-                            "stateMutability": "nonpayable",
-                            "type": "function"
-                            },
-                            {
-                            "inputs": [
-                                {
-                                "internalType": "uint256",
-                                "name": "_productId",
-                                "type": "uint256"
-                                }
-                            ],
-                            "name": "payForProduct",
-                            "outputs": [],
-                            "stateMutability": "payable",
-                            "type": "function",
-                            "payable": true
-                            },
-                            {
-                            "inputs": [
-                                {
-                                "internalType": "uint256",
-                                "name": "_productId",
-                                "type": "uint256"
-                                }
-                            ],
-                            "name": "calculateTotalPrice",
-                            "outputs": [
-                                {
-                                "internalType": "uint256",
-                                "name": "",
-                                "type": "uint256"
-                                }
-                            ],
-                            "stateMutability": "view",
-                            "type": "function",
-                            "constant": true
-                            },
-                            {
-                            "inputs": [
-                                {
-                                "internalType": "uint256",
-                                "name": "_productId",
-                                "type": "uint256"
-                                }
-                            ],
-                            "name": "getProduct",
-                            "outputs": [
-                                {
-                                "internalType": "string",
-                                "name": "",
-                                "type": "string"
-                                },
-                                {
-                                "internalType": "uint256",
-                                "name": "",
-                                "type": "uint256"
-                                },
-                                {
-                                "internalType": "uint256",
-                                "name": "",
-                                "type": "uint256"
-                                },
-                                {
-                                "internalType": "address",
-                                "name": "",
-                                "type": "address"
-                                },
-                                {
-                                "internalType": "bool",
-                                "name": "",
-                                "type": "bool"
-                                }
-                            ],
-                            "stateMutability": "view",
-                            "type": "function",
-                            "constant": true
-                            }
-                ];
-
-            let web3;
-            let userAccount;
-            let storeManagerContract;
-
-            // --- Elementos do DOM ---
-            const connectWalletBtn = document.getElementById('connectWalletBtn');
-            const walletAddressDiv = document.getElementById('walletAddress');
-            const networkNameDiv = document.getElementById('networkName');
-
-            const createProductBtn = document.getElementById('createProductBtn');
-            const productIdCreateInput = document.getElementById('productIdCreate');
-            const productNameInput = document.getElementById('productName');
-            const productQuantityInput = document.getElementById('productQuantity');
-            const productPriceInput = document.getElementById('productPrice');
-
-            const getProductBtn = document.getElementById('getProductBtn');
-            const calculatePriceBtn = document.getElementById('calculatePriceBtn');
-            const productIdQueryInput = document.getElementById('productIdQuery');
-            const productDetailsDiv = document.getElementById('productDetails');
-
-            const payProductBtn = document.getElementById('payProductBtn');
-            const productIdPayInput = document.getElementById('productIdPay');
-            const paymentStatusDiv = document.getElementById('paymentStatus');
-            
-            const errorMessagesDiv = document.getElementById('errorMessages');
-            const eventNotificationsContainer = document.getElementById('eventNotificationsContainer');
-
-            // --- Funções Auxiliares ---
-            function showError(message) {
-                errorMessagesDiv.innerHTML = `Erro: ${message}`;
-                errorMessagesDiv.classList.remove('hidden');
-                console.error(message);
-                setTimeout(() => { errorMessagesDiv.classList.add('hidden'); errorMessagesDiv.innerHTML = ''; }, 7000);
-            }
-
-            function showProductDetails(details) {
-                productDetailsDiv.innerHTML = details;
-                productDetailsDiv.classList.remove('hidden');
-            }
-
-            function showPaymentStatus(message) {
-                paymentStatusDiv.textContent = message;
-                paymentStatusDiv.classList.remove('hidden');
-                setTimeout(() => paymentStatusDiv.classList.add('hidden'), 7000);
-            }
-
-            function showEventNotification(message, type = 'info') {
-                const notification = document.createElement('div');
-                notification.className = 'eventNotification';
-                notification.textContent = message;
-                if (type === 'success') {
-                    notification.style.backgroundColor = '#d4edda';
-                    notification.style.color = '#155724';
-                } else { // info
-                    notification.style.backgroundColor = '#d1ecf1';
-                    notification.style.color = '#0c5460';
-                }
-                eventNotificationsContainer.appendChild(notification);
-                setTimeout(() => notification.remove(), 7000);
-            }
-            
-            function setButtonsDisabled(disabled) {
-                createProductBtn.disabled = disabled;
-                getProductBtn.disabled = disabled;
-                calculatePriceBtn.disabled = disabled;
-                payProductBtn.disabled = disabled;
-            }
-
-            // --- Lógica de Conexão e Contrato ---
-            async function connectWallet() {
-                if (typeof window.ethereum !== 'undefined') {
-                    web3 = new Web3(window.ethereum);
-                    try {
-                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                        userAccount = accounts[0];
-                        
-                        const networkId = await web3.eth.net.getId();
-                        let networkName = 'Desconhecida';
-                        if (networkId === 1) networkName = 'Mainnet';
-                        else if (networkId === 3) networkName = 'Ropsten';
-                        else if (networkId === 4) networkName = 'Rinkeby';
-                        else if (networkId === 5) networkName = 'Goerli';
-                        else if (networkId === 42) networkName = 'Kovan';
-                        else if (networkId === 1337 || networkId === 5777) networkName = 'Local (Ganache/Develop)'; // Common Ganache/local IDs
-                        networkNameDiv.textContent = `Rede: ${networkName} (ID: ${networkId})`;
-
-                        walletAddressDiv.textContent = `Carteira Conectada: ${userAccount.substring(0, 6)}...${userAccount.substring(userAccount.length - 4)}`;
-                        connectWalletBtn.textContent = 'Carteira Conectada';
-                        connectWalletBtn.disabled = true;
-
-                        storeManagerContract = new web3.eth.Contract(contractABI, contractAddress);
-                        setButtonsDisabled(false);
-                        listenToEvents();
-                        showError(''); // Clear any previous errors
-
-                    } catch (error) {
-                        showError("Falha ao conectar carteira: " + (error.message || error));
-                        walletAddressDiv.textContent = 'Falha ao conectar. Por favor, tente novamente.';
-                        setButtonsDisabled(true);
-                    }
-                } else {
-                    showError('MetaMask não detectado! Por favor, instale a MetaMask.');
-                    walletAddressDiv.textContent = 'MetaMask não encontrado.';
-                    setButtonsDisabled(true);
-                }
-            }
-
-            // --- Funções do Contrato ---
-            async function handleCreateProduct() {
-                if (!storeManagerContract || !userAccount) {
-                    showError("Carteira não conectada ou contrato não inicializado.");
-                    return;
-                }
-                const id = productIdCreateInput.value;
-                const name = productNameInput.value;
-                const quantity = productQuantityInput.value;
-                const unitPrice = productPriceInput.value;
-
-                if (!id || !name || !quantity || !unitPrice) {
-                    showError("Todos os campos para criar produto são obrigatórios.");
-                    return;
-                }
-
-                showProductDetails(`Criando produto... Por favor, aguarde a confirmação da transação.`);
-                try {
-                    const receipt = await storeManagerContract.methods.createProduct(id, name, quantity, unitPrice).send({ from: userAccount });
-                    showProductDetails(`Produto ${name} (ID: ${id}) criado com sucesso! Hash: ${receipt.transactionHash}`);
-                    productIdCreateInput.value = '';
-                    productNameInput.value = '';
-                    productQuantityInput.value = '';
-                    productPriceInput.value = '';
-                } catch (error) {
-                    showError(`Erro ao criar produto: ${error.message || (error.data ? error.data.message : error)}`);
-                }
-            }
-
-            async function handleGetProduct() {
-                if (!storeManagerContract) { // userAccount not needed for .call() but good to check contract
-                    showError("Contrato não inicializado. Conecte a carteira.");
-                    return;
-                }
-                const productId = productIdQueryInput.value;
-                if (!productId) {
-                    showError("ID do produto para consulta é obrigatório.");
-                    return;
-                }
-
-                try {
-                    // Web3.js returns struct results as an object with indexed keys
-                    // and named keys if names are present in ABI outputs. Our ABI has empty names for outputs.
-                    const product = await storeManagerContract.methods.getProduct(productId).call();
-
-                    if (!product || product[0] === "" ) { // Check if name (product[0]) is empty
-                        showProductDetails(`Produto com ID ${productId} não encontrado, nome vazio, ou dados inválidos.`);
-                        return;
-                    }
-                    showProductDetails(
-                        `Detalhes do Produto (ID: ${productId}):<br>
-                         Nome: ${product[0]}<br>
-                         Quantidade: ${product[1]}<br>
-                         Preço Unitário: ${web3.utils.fromWei(product[2], 'ether')} ETH (${product[2]} Wei)<br>
-                         Vendedor: ${product[3]}<br>
-                         Pago: ${product[4] ? 'Sim' : 'Não'}`
-                    );
-                } catch (error) {
-                    // Web3.js often includes reason in error.data.message or error.message for reverts
-                    let readableError = error.message;
-                    if (error.data && error.data.message) {
-                        readableError = error.data.message;
-                    } else if (error.message && error.message.toLowerCase().includes("product does not exist")) {
-                         showProductDetails(`Produto com ID ${productId} não encontrado (contrato reverteu).`);
-                         return;
-                    } else if (error.message && error.message.toLowerCase().includes("call revert exception")) {
-                        readableError = "A chamada ao contrato falhou (revert). Verifique o console para detalhes e se o ID do produto existe.";
-                    }
-
-                    showError(`Erro ao buscar produto: ${readableError}`);
-                    console.error("Detalhes do erro em handleGetProduct:", error);
-                }
-            }
-
-            async function handleCalculatePrice() {
-                if (!storeManagerContract) {
-                    showError("Contrato não inicializado. Conecte a carteira.");
-                    return;
-                }
-                const productId = productIdQueryInput.value;
-                if (!productId) {
-                    showError("ID do produto para cálculo de preço é obrigatório.");
-                    return;
-                }
-
-                try {
-                    const totalPrice = await storeManagerContract.methods.calculateTotalPrice(productId).call();
-                    showProductDetails(
-                        `Preço Total para o Produto (ID: ${productId}): ${web3.utils.fromWei(totalPrice, 'ether')} ETH (${totalPrice} Wei)`
-                    );
-                } catch (error) {
-                     let readableError = error.message;
-                    if (error.message && error.message.toLowerCase().includes("product does not exist")) {
-                         showProductDetails(`Produto com ID ${productId} não encontrado para cálculo (contrato reverteu).`);
-                         return;
-                    } else if (error.message && error.message.toLowerCase().includes("call revert exception")) {
-                        readableError = "A chamada ao contrato falhou (revert). Verifique se o ID do produto existe.";
-                    }
-                    showError(`Erro ao calcular preço: ${readableError}`);
-                }
-            }
-
-            async function handlePayProduct() {
-                if (!storeManagerContract || !userAccount) {
-                    showError("Carteira não conectada ou contrato não inicializado.");
-                    return;
-                }
-                const productId = productIdPayInput.value;
-                if (!productId) {
-                    showError("ID do produto para pagamento é obrigatório.");
-                    return;
-                }
-
-                showPaymentStatus(`Processando pagamento...`);
-                try {
-                    const productInfo = await storeManagerContract.methods.getProduct(productId).call();
-                    if (!productInfo || productInfo[0] === "") {
-                        showError(`Produto com ID ${productId} não encontrado para pagamento.`);
-                        showPaymentStatus('');
-                        return;
-                    }
-                    if (productInfo[4]) { // isPaid
-                        showError(`Produto com ID ${productId} já foi pago.`);
-                        showPaymentStatus('');
-                        return;
-                    }
-
-                    const totalPrice = await storeManagerContract.methods.calculateTotalPrice(productId).call();
-                    if (totalPrice.toString() === "0") {
-                        showError("Preço do produto é zero ou produto não encontrado. Não é possível pagar.");
-                        showPaymentStatus('');
-                        return;
-                    }
-
-                    const receipt = await storeManagerContract.methods.payForProduct(productId).send({ from: userAccount, value: totalPrice });
-                    showPaymentStatus(`Produto (ID: ${productId}) pago com sucesso! Valor: ${web3.utils.fromWei(totalPrice, 'ether')} ETH. Hash: ${receipt.transactionHash}`);
-                    productIdPayInput.value = '';
-                } catch (error) {
-                    let readableError = error.message;
-                     if (error.data && error.data.message && error.data.message.toLowerCase().includes("product does not exist")) {
-                        readableError = `Erro ao pagar: Produto com ID ${productId} não encontrado.`;
-                    } else if (error.data && error.data.message && error.data.message.toLowerCase().includes("product already paid for")) {
-                        readableError = `Erro ao pagar: Produto com ID ${productId} já foi pago.`;
-                    } else if (error.data && error.data.message && error.data.message.toLowerCase().includes("incorrect payment amount")) {
-                        readableError = `Erro ao pagar: Valor do pagamento incorreto para o produto ID ${productId}.`;
-                    }
-                    showError(`Erro ao pagar produto: ${readableError}`);
-                    showPaymentStatus('');
-                    console.error("Erro em handlePayProduct:", error);
-                }
-            }
-
-            // --- Ouvir Eventos do Contrato ---
-            function listenToEvents() {
-                if (!storeManagerContract) return;
-
-                storeManagerContract.events.ProductCreated({fromBlock: 'latest'})
-                    .on('data', event => {
-                        console.log("Evento ProductCreated:", event.returnValues);
-                        const { id, name, unitPrice } = event.returnValues;
-                        showEventNotification(`🎉 Novo Produto Criado! ID: ${id}, Nome: ${name}, Preço: ${web3.utils.fromWei(unitPrice, 'ether')} ETH`, 'info');
-                    })
-                    .on('error', error => {
-                        console.error("Erro ao ouvir ProductCreated:", error);
-                        showError("Erro ao ouvir evento ProductCreated do contrato.");
-                    });
-
-                storeManagerContract.events.PaymentSuccessful({fromBlock: 'latest'})
-                    .on('data', event => {
-                        console.log("Evento PaymentSuccessful:", event.returnValues);
-                        const { productId, buyer, amount } = event.returnValues;
-                        showEventNotification(`💸 Pagamento Recebido! Produto ID: ${productId}, Comprador: ${buyer.substring(0,6)}..., Valor: ${web3.utils.fromWei(amount, 'ether')} ETH`, 'success');
-                    })
-                    .on('error', error => {
-                        console.error("Erro ao ouvir PaymentSuccessful:", error);
-                         showError("Erro ao ouvir evento PaymentSuccessful do contrato.");
-                    });
-            }
-
-            // --- Adicionar Event Listeners aos Botões ---
-            connectWalletBtn.addEventListener('click', connectWallet);
-            createProductBtn.addEventListener('click', handleCreateProduct);
-            getProductBtn.addEventListener('click', handleGetProduct);
-            calculatePriceBtn.addEventListener('click', handleCalculatePrice);
-            payProductBtn.addEventListener('click', handlePayProduct);
-
-            // Inicialmente desabilitar botões que dependem da conexão da carteira
-            setButtonsDisabled(true);
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
+
 </html>
