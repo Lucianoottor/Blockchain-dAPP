@@ -136,6 +136,13 @@ label {
     box-sizing: border-box; /* incluir padding e border no cálculo da largura */
 }
 
+.input_2 p {
+    text-align: left;
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #ccc; /* cor um pouco mais clara para os valores convertidos */
+}
+
 .create_product_container button {
     width: var(--content-width); /* garantir que o botão tenha a mesma largura dos inputs */
     background-color: var(--button-success);

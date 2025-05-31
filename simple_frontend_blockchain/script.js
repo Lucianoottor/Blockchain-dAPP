@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- Configuração do Contrato ---
     // !!! SUBSTITUA PELO ENDEREÇO DO SEU CONTRATO IMPLANTADO !!!
-    const contractAddress = "0x5921517FAA9f510E0fF3f43B390BAdb44D8114Fa"; // Use o endereço que você me forneceu por último
+    const contractAddress = "0xAc241E867Afaa2BC7495b641F18771b42137669B"; // Use o endereço que você me forneceu por último
     const contractABI = [
         {
             inputs: [],
@@ -305,6 +305,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const productQuantityInput = document.getElementById("productQuantity");
     const productPriceInput = document.getElementById("productPrice");
 
+    const productPriceEth = document.getElementById("productPriceEth"); // novo elemento
+    const totalPriceEth = document.getElementById("totalPriceEth"); // novo elemento
+
     const getProductBtn = document.getElementById("getProductBtn");
     const calculatePriceBtn = document.getElementById("calculatePriceBtn");
     const productIdQueryInput = document.getElementById("productIdQuery");
@@ -369,6 +372,11 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("ERRO: Elemento createProductBtn não encontrado!");
         }
 
+        // desabilitar/habilitar inputs também
+        if (productNameInput) productNameInput.disabled = disabled;
+        if (productQuantityInput) productQuantityInput.disabled = disabled;
+        if (productPriceInput) productPriceInput.disabled = disabled;
+        if (productIdQueryInput) productIdQueryInput.disabled = disabled;
         if (getProductBtn) {
             getProductBtn.disabled = disabled;
         } else {
@@ -399,6 +407,41 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } else {
              console.warn("updateConsultContainerPadding: containers nao encontrados.");
+        }
+    }
+
+    function updatePricesEth() {
+        if (!web3) {
+            // web3 não inicializado, não fazemos nada ainda.
+            if (productPriceEth) productPriceEth.textContent = 'Preço Unitário: 0.000000000000000000 ETH'; // mostrar 0 com 18 casas decimais e rótulo
+            if (totalPriceEth) totalPriceEth.textContent = 'Preço Total: 0.000000000000000000 ETH'; // mostrar 0 com 18 casas decimais e rótulo
+            return;
+        }
+
+        const quantity = parseFloat(productQuantityInput.value);
+        const unitPriceWei = productPriceInput.value;
+
+        if (isNaN(quantity) || quantity <= 0 || !unitPriceWei || unitPriceWei.trim() === '') {
+            // inputs inválidos, mostrar 0 ETH com 18 casas decimais e rótulo
+            if (productPriceEth) productPriceEth.textContent = 'Preço Unitário: 0.000000000000000000 ETH';
+            if (totalPriceEth) totalPriceEth.textContent = 'Preço Total: 0.000000000000000000 ETH';
+            return;
+        }
+
+        try {
+            // converter preço unitário para ETH
+            const unitPriceEth = web3.utils.fromWei(unitPriceWei, 'ether');
+            if (productPriceEth) productPriceEth.textContent = `Preço Unitário: ${parseFloat(unitPriceEth).toFixed(18)} ETH`; // exibir com 18 casas decimais e rótulo
+
+            // calcular preço total em ETH
+            const totalPriceEthValue = quantity * parseFloat(unitPriceEth);
+            if (totalPriceEth) totalPriceEth.textContent = `Preço Total: ${totalPriceEthValue.toFixed(18)} ETH`; // exibir com 18 casas decimais e rótulo
+
+        } catch (error) {
+            // em caso de erro na conversão (ex: valor wei inválido), mostrar inválido
+            console.error("Erro ao converter WEI para ETH ou calcular total:", error);
+             if (productPriceEth) productPriceEth.textContent = 'Preço Unitário: Inválido';
+             if (totalPriceEth) totalPriceEth.textContent = 'Preço Total: Inválido';
         }
     }
 
@@ -442,6 +485,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     contractAddress
                 );
                 setButtonsDisabled(false);
+                // marca como adicionado antes de chamar listenToEvents
+                listenersAttached = true;
                 // chama listenToEvents apenas após conectar e inicializar o contrato
                 listenToEvents();
 
@@ -504,6 +549,11 @@ document.addEventListener("DOMContentLoaded", () => {
             productNameInput.value = "";
             productQuantityInput.value = "";
             productPriceInput.value = "";
+
+            // atualizar listas após a criação bem-sucedida
+            await loadAndDisplayProducts();
+            await loadAndDisplayAllProducts();
+
         } catch (error) {
             showError(`Erro ao criar produto: ${error.message || (error.data ? error.data.message : error)}`);
         }
@@ -648,6 +698,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     "ether"
                 )} ETH. Hash: ${receipt.transactionHash}`
             );
+
+            // atualizar listas após o pagamento bem-sucedido
+            await loadAndDisplayProducts();
+            await loadAndDisplayAllProducts();
+
             productIdPayInput.value = "";
         } catch (error) {
             let readableError = error.message;
@@ -666,13 +721,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadAndDisplayAllProducts() {
         console.log("--- loadAndDisplayAllProducts: FUNÇÃO INICIADA ---");
+        console.log(`loadAndDisplayAllProducts: Chamada em: ${new Date().toISOString()}`);
 
         if (!storeManagerContract) {
             console.warn("loadAndDisplayAllProducts: Contrato não inicializado ou carteira não conectada.");
             if (allProductListDiv) {
                  allProductListDiv.innerHTML = '<p>Conecte a carteira para carregar todos os produtos.</p>';
             } else {
-                // Este log só apareceria se allProductListDiv não estivesse no HTML
                 console.error("loadAndDisplayAllProducts: ERRO CRÍTICO - allProductListDiv é null!");
             }
             return;
@@ -683,8 +738,11 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        allProductListDiv.innerHTML = '<p>Carregando todos os produtos...</p>';
-        console.log("loadAndDisplayAllProducts: Exibindo 'Carregando todos os produtos...'");
+        // limpa a lista antes de adicionar novos produtos de forma mais robusta
+        while (allProductListDiv.firstChild) {
+            allProductListDiv.removeChild(allProductListDiv.firstChild);
+        }
+        console.log("loadAndDisplayAllProducts: allProductListDiv limpo.");
 
         try {
             const productIds = await storeManagerContract.methods.getAllProductIds().call();
@@ -692,32 +750,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!productIds || productIds.length === 0) {
                 allProductListDiv.innerHTML = '<p>Nenhum produto cadastrado na loja.</p>';
-                // availableProductsContainer.classList.add('hidden'); // mantere availableProductsContainer visivel mesmo se allProductsContainer estiver vazio
                 console.log("loadAndDisplayAllProducts: Nenhum ID de produto encontrado. Exibindo mensagem e saindo.");
                 updateConsultContainerPadding();
                 return;
             }
 
-            allProductListDiv.innerHTML = ''; // Limpa a lista
-            console.log("loadAndDisplayAllProducts: allProductListDiv limpo.");
+            // usa um Set para garantir que não haja duplicação de IDs
+            const uniqueProductIds = [...new Set(productIds)];
+            console.log("loadAndDisplayAllProducts: IDs Únicos a serem processados:", JSON.stringify(uniqueProductIds));
 
-            let productsEffectivelyFound = 0; // Contador para produtos válidos (com nome)
+            let productsEffectivelyFound = 0;
 
-            for (const id of productIds) {
+            for (const id of uniqueProductIds) {
                 console.log(`loadAndDisplayAllProducts: Iterando - Processando ID: ${id}`);
                 try {
                     const product = await storeManagerContract.methods.getProduct(id).call();
-                    // product[0] = name, product[1] = quantity, product[2] = unitPrice
-                    // product[3] = seller, product[4] = isPaid
-
-                    // Log para depuração do produto individual
                     console.log(`--- Detalhes (Todos) para Produto ID: ${id}, Pago: ${product ? product[4] : 'N/A'} ---`);
 
-                    // Condição: Apenas exibir se o produto for válido (nome não vazio)
                     if (product && product[0] !== "") {
                         productsEffectivelyFound++;
                         const productBox = document.createElement('div');
-                        productBox.className = 'product-box'; // Reutilizar a mesma classe CSS
+                        productBox.className = 'product-box';
                         const productPriceEth = web3.utils.fromWei(product[2].toString(), 'ether');
 
                         productBox.innerHTML = `
@@ -726,28 +779,26 @@ document.addEventListener("DOMContentLoaded", () => {
                             <p><strong>Preço Unitário:</strong> ${productPriceEth} ETH (${product[2].toString()} Wei)</p>
                             <p><strong>Vendedor:</strong> ${product[3].substring(0,6)}...${product[3].substring(product[3].length - 4)}</p>
                             <p><strong>Status:</strong> ${product[4] ? 'Pago ✅' : 'Disponível 🛒'}</p>
-                        `; // Status dinâmico
-
+                        `;
+                        console.log(`loadAndDisplayAllProducts: Adicionando produto ID ${id} à lista.`);
                         allProductListDiv.appendChild(productBox);
-                    } else if (product) { // Produto existe mas nome é vazio
-                         console.log(`loadAndDisplayAllProducts: Produto ID: ${id} - Inválido (nome vazio). NÃO EXIBINDO.`);
-                    } else { // Produto não pôde ser carregado
+                    } else if (product) {
+                        console.log(`loadAndDisplayAllProducts: Produto ID: ${id} - Inválido (nome vazio). NÃO EXIBINDO.`);
+                    } else {
                         console.warn(`loadAndDisplayAllProducts: Produto ID: ${id} - Não foi possível carregar os detalhes.`);
                     }
-
                 } catch (error) {
                     console.error(`loadAndDisplayAllProducts: Erro ao buscar detalhes do produto com ID ${id}:`, error);
                     const errorBox = document.createElement('div');
-                    errorBox.className = 'product-box'; // Mantém consistência visual
+                    errorBox.className = 'product-box';
                     errorBox.innerHTML = `<p style="color:red;">Erro ao carregar produto ID ${id}.</p>`;
                     allProductListDiv.appendChild(errorBox);
                 }
             }
 
-            if (productsEffectivelyFound === 0 && productIds.length > 0) {
-                 allProductListDiv.innerHTML = '<p>Nenhum produto válido encontrado (verifique o console para detalhes de erros por ID).</p>';
+            if (productsEffectivelyFound === 0 && uniqueProductIds.length > 0) {
+                allProductListDiv.innerHTML = '<p>Nenhum produto válido encontrado (verifique o console para detalhes de erros por ID).</p>';
             }
-            // A verificação de productIds.length === 0 já cobre o caso de nenhum produto cadastrado.
 
             console.log("--- loadAndDisplayAllProducts: FUNÇÃO CONCLUÍDA ---");
             updateConsultContainerPadding();
@@ -881,9 +932,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 )} ETH. Hash: ${receipt.transactionHash}`
             );
 
-            // removemos as chamadas diretas aqui. as listas serão atualizadas pelo evento PaymentSuccessful.
-            // loadAndDisplayProducts();
-            // loadAndDisplayAllProducts();
+            // atualizar listas após o pagamento bem-sucedido
+            await loadAndDisplayProducts();
+            await loadAndDisplayAllProducts();
 
         } catch (error) {
             let readableError = error.message;
@@ -907,12 +958,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         storeManagerContract.events
             .ProductCreated({ fromBlock: "latest" })
-            .on("data", (event) => {
+            .on("data", async (event) => {
+                console.log("--- Evento ProductCreated Recebido ---");
                 console.log("Evento ProductCreated:", event.returnValues);
                 const { id, name, unitPrice } = event.returnValues;
                 // ao criar um produto, apenas atualiza as listas
-                loadAndDisplayProducts();
-                loadAndDisplayAllProducts();
+                await loadAndDisplayProducts();
+                await loadAndDisplayAllProducts();
             })
             .on("error", (error) => {
                 console.error("Erro ao ouvir ProductCreated:", error);
@@ -921,7 +973,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         storeManagerContract.events
             .PaymentSuccessful({ fromBlock: "latest" })
-            .on("data", (event) => {
+            .on("data", async (event) => {
+                console.log("--- Evento PaymentSuccessful Recebido ---");
                 console.log("Evento PaymentSuccessful:", event.returnValues);
                 const { productId, buyer, amount } = event.returnValues;
                 showEventNotification(
@@ -932,8 +985,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     "success"
                 );
                 // ao pagar um produto, atualiza as listas
-                loadAndDisplayProducts();
-                loadAndDisplayAllProducts(); // adicionar essa linha para atualizar a lista de "todos os produtos" também
+                await loadAndDisplayProducts();
+                await loadAndDisplayAllProducts();
             })
             .on("error", (error) => {
                 console.error("Erro ao ouvir PaymentSuccessful:", error);
@@ -948,6 +1001,13 @@ document.addEventListener("DOMContentLoaded", () => {
     createProductBtn.addEventListener("click", handleCreateProduct);
     getProductBtn.addEventListener("click", handleGetProduct);
     calculatePriceBtn.addEventListener("click", handleCalculatePrice);
+
+    // Adicionar event listeners para os inputs de quantidade e preço para atualização em tempo real
+    if (productQuantityInput) productQuantityInput.addEventListener('input', updatePricesEth);
+    if (productPriceInput) productPriceInput.addEventListener('input', updatePricesEth);
+
+    // chamar a função uma vez na inicialização para exibir 0 ETH
+    updatePricesEth();
 
     // Inicialmente desabilitar botões que dependem da conexão da carteira
     setButtonsDisabled(true);
