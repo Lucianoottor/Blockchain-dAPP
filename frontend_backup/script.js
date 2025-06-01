@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- Configuração do Contrato ---
     // !!! SUBSTITUA PELO ENDEREÇO DO SEU CONTRATO IMPLANTADO !!!
-    const contractAddress = "0xAc241E867Afaa2BC7495b641F18771b42137669B"; // Use o endereço que você me forneceu por último
+    const contractAddress = "0xfBAc35bC21ceC0BE5aCa3c69Fa0d497db16552ca"; // Use o endereço que você me forneceu por último
     const contractABI = [
         {
             inputs: [],
