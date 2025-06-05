@@ -810,7 +810,7 @@ const ProductList: React.FC<{ type: 'all' | 'available' }> = ({ type }) => {
         alert(`Falha ao pagar produto: ${reason}`);
       }
     }
-  }, [contract, account, web3]);
+  }, [contract, account, web3, loadProducts]); // <-- THIS IS THE FIX
 
   return (
     <div className="product-list-section" style={{ marginBottom: '30px' }}>
