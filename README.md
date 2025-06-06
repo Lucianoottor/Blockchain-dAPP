@@ -88,6 +88,6 @@ Este projeto foi construído com algumas das ferramentas mais populares do ecoss
 
 A aplicação está disponível para teste e demonstração. Acesse o link abaixo e sinta-se à vontade para interagir com o marketplace!
 
-➡️ **[Acessar a Demo do EtherMarket](https://frontend-ganache.onrender.com/)** ⬅️
+➡️ **[Acessar a Demo do EtherMarket](https://blockchain-dapp-hzfn.onrender.com/)** ⬅️
 
 **Atenção:** Como a aplicação se conecta a uma rede de teste privada, talvez seja necessário configurar sua MetaMask para se conectar a ela. Para uma experiência simplificada, siga o guia de [Uso da Aplicação](#-uso-da-aplicação).
