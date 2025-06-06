@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://i.imgur.com/U5f1q9g.png" alt="Banner do EtherMarket" width="800"/>
+  <img src="https://pixabay.com/photos/ethereum-cryptocurrency-coin-eth-6286124/" alt="Banner do EtherMarket" width="800"/>
   <h1>EtherMarket: Marketplace Descentralizado na Ethereum</h1>
   <p>Um dApp de marketplace para compra e venda de produtos, construído como um projeto de estudo para explorar o ecossistema da blockchain Ethereum.</p>
 </div>
