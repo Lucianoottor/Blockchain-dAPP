@@ -16,7 +16,7 @@ de produtos, construído como um projeto de estudo para explorar o ecossistema d
 
 ---
 
-<img src="./assets/Capturar.png" width="800px">
+<img src="./assets/Capturar.PNG" width="800px">
 
 ## 📋 Índice
 
