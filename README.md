@@ -1,7 +1,10 @@
 <div align="center">
-  <img src="https://pixabay.com/photos/ethereum-cryptocurrency-coin-eth-6286124/" alt="Banner do EtherMarket" width="800"/>
+  
+
+  <img src="![Capturar](https://github.com/user-attachments/assets/c1750d32-8d9a-4da3-a37b-1f0f26ee024b)" alt="Banner do EtherMarket" width="800"/>
   <h1>EtherMarket: Marketplace Descentralizado na Ethereum</h1>
-  <p>Um dApp de marketplace para compra e venda de produtos, construído como um projeto de estudo para explorar o ecossistema da blockchain Ethereum.</p>
+  <p>Um dApp de marketplace para compra e venda ![Uploading Capturar.PNG…]()
+de produtos, construído como um projeto de estudo para explorar o ecossistema da blockchain Ethereum.</p>
 </div>
 
 <div align="center">
