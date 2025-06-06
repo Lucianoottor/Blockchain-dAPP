@@ -63,15 +63,15 @@ Abaixo, uma visão geral da interface principal da aplicação:
 
 A aplicação foi projetada com componentes desacoplados, seguindo uma arquitetura moderna para dApps. O diagrama abaixo ilustra o fluxo de interação:
 
-
+\`\`\`mermaid
 graph TD
-    A[👨‍💻 Usuário] --> B{Frontend - React};
-    B -- Chamada Web3.js --> D[📜 Smart Contract];
-    C((🌐 Frontend Host - Render)) --> B;
+    A[\👨‍💻 Usuário] --> B{Frontend - React};
+    B -- Chamada Web3.js --> D[\📜 Smart Contract];
+    C((\🌐 Frontend Host - Render)) --> B;
     D -- Deploy/Migrate --> E{Blockchain Privada};
     F{Ferramentas de Deploy - Truffle Suite} -- Gerencia --> D;
-    E -- Hospedada em --> G[📦 Container Docker];
-    G -- Rodando em --> H((☁️ Microsoft Azure));
+    E -- Hospedada em --> G[\📦 Container Docker];
+    G -- Rodando em --> H((\☁️ Microsoft Azure));
 
     subgraph "Interface do Usuário (Client-Side)"
         A
@@ -95,9 +95,9 @@ graph TD
     style E fill:#3C3C3D,stroke:#fff,stroke-width:2px,color:#fff
     style F fill:#3D1200,stroke:#fff,stroke-width:2px,color:#fff
     style H fill:#0078D4,stroke:#fff,stroke-width:2px,color:#fff
+\`\`\`
 
 ---
-
 ## 🛠️ Tecnologias Utilizadas
 
 Este projeto foi construído com algumas das ferramentas mais populares do ecossistema de desenvolvimento web e blockchain:
