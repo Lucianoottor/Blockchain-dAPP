@@ -1,8 +1,5 @@
 <div align="center">
   
-
-  <img src="![Capturar](https://github.com/user-attachments/assets/c1750d32-8d9a-4da3-a37b-1f0f26ee024b)" alt="Banner do EtherMarket" width="800"/>
-  ![Capturar](https://github.com/user-attachments/assets/c1750d32-8d9a-4da3-a37b-1f0f26ee024b)
   <h1>EtherMarket: Marketplace Descentralizado na Ethereum</h1>
   <p>Um dApp de marketplace para compra e venda ![Uploading Capturar.PNG…]()
 de produtos, construído como um projeto de estudo para explorar o ecossistema da blockchain Ethereum.</p>
@@ -59,10 +56,6 @@ O projeto não utiliza a rede principal (mainnet) do Ethereum e não envolve val
 
 Abaixo, uma visão geral da interface principal da aplicação:
 
-<div align="center">
-  <img src="https://i.imgur.com/k4S7AEd.gif" alt="GIF de demonstração do EtherMarket" width="800"/>
-  <p><em>Animação mostrando a conexão com a MetaMask e a compra de um produto.</em></p>
-</div>
 
 ---
 
