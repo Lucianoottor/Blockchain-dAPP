@@ -63,8 +63,7 @@ Abaixo, uma visão geral da interface principal da aplicação:
 
 A aplicação foi projetada com componentes desacoplados, seguindo uma arquitetura moderna para dApps. O diagrama abaixo ilustra o fluxo de interação:
 
-![Diagrama de Arquitetura dApp]()
-![Uploading unnamed.png…]()
+![Diagrama de Arquitetura dApp](/assets/unnamed.jpg)
 
 ## 🛠️ Tecnologias Utilizadas
 
